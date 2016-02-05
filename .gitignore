@@ -2,3 +2,4 @@
 *.o
 firmware.elf
 firmware.srec
+firmware.bin
