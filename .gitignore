@@ -1,4 +1,4 @@
 *.swp
 *.o
-bootloader.elf
-bootloader.srec
+firmware.elf
+firmware.srec

@@ -7,7 +7,7 @@ ENTRY(_start)
 RAM_SIZE = 32 * 1024;
 FLASH_SIZE = 128 * 1024;
 
-RESET_ADDR = 0xbfc00000;
+RESET_ADDR = 0xbd000000;
 
 MEMORY {
     kseg0_program           : ORIGIN = 0x9d000000, LENGTH = FLASH_SIZE
@@ -33,11 +33,12 @@ SECTIONS {
         *(.reset)
         *(.text)
         *(.rodata)
-    } > kseg1_program_mem :code_header
+        *(.rodata.*)
+    } > kseg1_program :code_header
 
     .data_begin : {
         data_flash_begin = .;
-    } > kseg1_program_mem
+    } > kseg1_program
 
     /* Initialized non-constant globals */
     .data : {
@@ -45,11 +46,11 @@ SECTIONS {
         *(.data)
         *(.sdata)
         data_ram_end = .;
-    } > kseg1_mem AT >kseg1_program_mem
+    } > kseg1_mem AT >kseg1_program :code_header
 
     .data_end : {
         data_flash_end = .;
-    } > kseg1_program_mem
+    } > kseg1_program
 
     .bss : {
         bss_ram_begin = .;
