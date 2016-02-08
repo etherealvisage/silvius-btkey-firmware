@@ -25,6 +25,7 @@ MEMORY {
 
 PHDRS {
     code_header PT_LOAD;
+    data_header PT_LOAD;
 }
 
 SECTIONS {
@@ -46,7 +47,7 @@ SECTIONS {
         *(.data)
         *(.sdata)
         data_ram_end = .;
-    } > kseg1_mem AT >kseg1_program :code_header
+    } > kseg1_mem AT >kseg1_program :data_header
 
     .data_end : {
         data_flash_end = .;

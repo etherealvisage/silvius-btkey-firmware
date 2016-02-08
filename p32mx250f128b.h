@@ -12584,11 +12584,4 @@ extern volatile __DEVCFG0bits_t DEVCFG0bits __asm__ ("DEVCFG0") __attribute__((s
 # define __PIC32_HAS_MIPS16 1
 #endif
 
-/* include generic header file for backwards compatibility with old C32 v1.xx code */
-/* WARNING: Macros from this file are deprecated and should not be used in new     */
-/*          source code.                                                           */
-//#include "ppic32mx.h"
-
-
-
 #endif

@@ -3,6 +3,14 @@
 
 #include "p32mx250f128b.h"
 
+#include "bluetooth.h"
+
+typedef bool (*state_machine_ptr)();
+
+state_machine_ptr state_machines[] = {
+    bluetooth_state_machine,
+};
+
 void setup_sysclk() {
     asm volatile("di");
     // unlock OSCCON
@@ -35,26 +43,37 @@ void entry() {
     // mark U1TX (RB15) as output
     TRISBCLR = (1<<15);
     // Set up PPS for U1
-    U1RXR = 0b0011; // RPB13 to U1RX
-    RPB15R = 0b0001; // RPB15 to U1TX
+    U2RXR = 0b0000; // RPA1 to U2RX
+    RPB0R = 0b0010; // RPB0 to U2TX
     // Initialize U1
     // Set baud rate to 38400 baud
     U1BRG = 38;
-    // Set U1MODE to enable (15), (simplex mode 11)
-    U1MODE = (1<<11);
-    U1MODE |= (1<<15);
+    // Enable U1
+    U1MODEbits.ON = 1;
+    // Use simplex mode (two-wire)
+    U1MODEbits.RTSMD = 1;
 
-    // Enable transmission (10) and receiving (12)
-    U1STA = (1<<12) | (1<<10);
+    // Enable transmission and receiving
+    U1STAbits.UTXEN = 1;
+    U1STAbits.URXEN = 1;
 
+    // set RA0 (LED) to output
     TRISACLR = 1;
 
-    U1TXREG = 'F';
-    U1TXREG = 'R';
-    U1TXREG = 'M';
-    U1TXREG = '!';
+    // Let any listeners know we've finished initializing
+    U1TXREG = '~';
 
-    while(1) {}
+    while(1) {
+        int i;
+        bool idle = true;
+        for(i = 0; i < sizeof(state_machines)/sizeof(state_machine_ptr); i ++) {
+            idle = state_machines[i]() && idle;
+        }
+
+        if(idle) {
+            /* TODO: enter power-saving mode here */
+        }
+    }
 }
 
 void nmi_handler() {
