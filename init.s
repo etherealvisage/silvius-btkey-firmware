@@ -53,7 +53,6 @@ initialize_ram:
 .extern data_ram_begin
 .extern data_ram_end
 .extern data_flash_end
-	/*
 	la	$t0, data_ram_begin
 	la	$t1, data_ram_end
 	la	$t2, data_flash_begin
@@ -71,7 +70,6 @@ initialize_ram:
 	j	.copy_loop
 	nop
 .copy_loop_end:
-	*/
 
 	jr 	$ra
 	nop
