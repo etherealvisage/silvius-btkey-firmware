@@ -53,6 +53,7 @@ initialize_ram:
 .extern data_ram_begin
 .extern data_ram_end
 .extern data_flash_end
+	/*
 	la	$t0, data_ram_begin
 	la	$t1, data_ram_end
 	la	$t2, data_flash_begin
@@ -61,8 +62,8 @@ initialize_ram:
 	beq	$t0, $t1, .copy_loop_end
 	nop
 
-	lw	$t3, 0($t0)
-	sw	$t3, 0($t2)
+	lw	$t3, 0($t2)
+	sw	$t3, 0($t0)
 
 	add	$t0, $t0, 4
 	add	$t2, $t2, 4
@@ -70,6 +71,7 @@ initialize_ram:
 	j	.copy_loop
 	nop
 .copy_loop_end:
+	*/
 
 	jr 	$ra
 	nop

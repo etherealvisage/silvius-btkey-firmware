@@ -26,6 +26,7 @@ MEMORY {
 PHDRS {
     code_header PT_LOAD;
     data_header PT_LOAD;
+    bss_header PT_LOAD;
 }
 
 SECTIONS {
@@ -37,28 +38,31 @@ SECTIONS {
         *(.rodata.*)
     } > kseg1_program :code_header
 
-    .data_begin : {
+    .data_begin : ALIGN(4) {
         data_flash_begin = .;
-    } > kseg1_program
+    } > kseg1_program :data_header
 
     /* Initialized non-constant globals */
-    .data : {
+    .data : ALIGN(4) {
         data_ram_begin = .;
         *(.data)
         *(.sdata)
         data_ram_end = .;
     } > kseg1_mem AT >kseg1_program :data_header
 
-    .data_end : {
+    .data_end : ALIGN(4) {
         data_flash_end = .;
-    } > kseg1_program
+    } > kseg1_program :data_header
 
-    .bss : {
+    . = ALIGN(4);
+
+    .bss : ALIGN(4) {
         bss_ram_begin = .;
         *(.bss)
         *(.sbss)
+        . = ALIGN(4);
         bss_ram_end = .;
-    } > kseg1_mem
+    } > kseg1_mem :bss_header
 
     _gp = 0xa0008000;
     _sp = 0xa0008000; /* TODO: change if RAM size is different */
