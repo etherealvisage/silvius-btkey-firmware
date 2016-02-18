@@ -20,6 +20,8 @@ struct {
 bool bluetooth_state_machine() {
     static bluetooth_state STATE = BT_INIT_STATE;
 
+    return false;
+
     bool idle = false;
 
     switch(STATE) {

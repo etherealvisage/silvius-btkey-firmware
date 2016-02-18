@@ -8,7 +8,7 @@
 
 typedef bool (*state_machine_ptr)();
 
-state_machine_ptr state_machines[] = {
+const state_machine_ptr state_machines[] = {
     bluetooth_state_machine,
     keyboard_state_machine,
 };
@@ -30,6 +30,15 @@ void setup_sysclk() {
     SYSKEY = 0x0; // write invalid key to force lock
 
     asm volatile("ei");
+}
+
+void format32(char *p, uint32_t v) {
+    const char *hex = "0123456789abcdef";
+    int i;
+    for(i = 0; i < 8; i ++) {
+        p[i] = hex[v >> 28];
+        v <<= 4;
+    }
 }
 
 void entry() {
@@ -93,17 +102,26 @@ void entry() {
     // Let any listeners know we've finished initializing
     U1TXREG = '~';
     U2TXREG = '~';
+    
+    LATACLR = 1;
 
+    int j = 0;
     while(1) {
-        int i;
+        int i = 0;
         bool idle = true;
-        for(i = 0; i < sizeof(state_machines)/sizeof(state_machine_ptr); i ++) {
+
+        for(; i < sizeof(state_machines)/sizeof(state_machine_ptr); i ++) {
             idle = state_machines[i]() && idle;
         }
 
         if(idle) {
             /* TODO: enter power-saving mode here */
         }
+        if(j <= 0) {
+            LATAINV = 1;
+            j = 100000;
+        }
+        j --;
     }
 }
 
