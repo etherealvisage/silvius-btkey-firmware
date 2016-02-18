@@ -22,6 +22,8 @@
 #ifndef USB_CONFIG_H__
 #define USB_CONFIG_H__
 
+#include "device.h"
+
 /* Number of endpoint numbers besides endpoint zero. It's worth noting that
    and endpoint NUMBER does not completely describe an endpoint, but the
    along with the DIRECTION does (eg: EP 1 IN).  The #define below turns on

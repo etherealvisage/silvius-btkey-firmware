@@ -201,22 +201,22 @@ static const ROMPTR struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t la
 	0x0409 // US English
 };
 
-static const ROMPTR struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[23]; } vendor_string = {
+static const ROMPTR struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[6]; } vendor_string = {
 	sizeof(vendor_string),
 	DESC_STRING,
-	{'S','i','g','n','a','l',' ','1','1',' ','S','o','f','t','w','a','r','e',' ','L','L','C','.'}
+	{'V','o','x','h','u','b'}
 };
 
-static const ROMPTR struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[14]; } product_string = {
+static const ROMPTR struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[13]; } product_string = {
 	sizeof(product_string),
 	DESC_STRING,
-	{'U','S','B',' ','M','o','u','s','e',' ','D','e','m','o'}
+    {'S','i','l','v','i','u','s',' ','b','t','k','e','y'}
 };
 
-static const ROMPTR struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[11]; } interface_string = {
+static const ROMPTR struct {uint8_t bLength;uint8_t bDescriptorType; uint16_t chars[8]; } interface_string = {
 	sizeof(interface_string),
 	DESC_STRING,
-	{'I','n','t','e','r','f','a','c','e',' ','1'}
+    {'K','e','y','b','o','a','r','d'}
 };
 
 /* Get String function

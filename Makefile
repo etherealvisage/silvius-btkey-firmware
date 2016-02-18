@@ -4,7 +4,7 @@ CC:="${PREFIX}gcc"
 LD:="${PREFIX}ld"
 OBJCOPY:="${PREFIX}objcopy"
 
-CFLAGS := -D__XC32__ -D__PIC32MX__ -Os -msoft-float -EL -march=m4k -nostdlib -I. -Iusb/include
+CFLAGS := -D__PIC32MX__ -Os -msoft-float -EL -march=m4k -nostdlib -I. -Iusb/include
 
 MAIN_OBJECTS := main.o bluetooth.o keyboard.o util.o
 USB_OBJECTS := usb_descriptors.o usb/src/usb.o usb/src/usb_cdc.o usb/src/usb_hid.o
