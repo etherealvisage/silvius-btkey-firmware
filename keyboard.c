@@ -11,7 +11,13 @@ typedef enum keyboard_state {
 } keyboard_state;
 
 struct {
+    char type_buffer[64];
+    int type_buffer_start;
+    int type_buffer_count;
+    int type_pressed;
 } k_data;
+
+static uint8_t keyboard_convert_ascii(char c);
 
 bool keyboard_state_machine() {
     static keyboard_state STATE = K_INIT_STATE;
@@ -19,6 +25,10 @@ bool keyboard_state_machine() {
     case K_INIT_STATE: {
         usb_init();
         STATE = K_WAIT_STATE;
+
+        k_data.type_buffer_start = 0;
+        k_data.type_buffer_count = 0;
+        k_data.type_pressed = 0;
         break;
     }
     case K_WAIT_STATE: {
@@ -29,9 +39,20 @@ bool keyboard_state_machine() {
             unsigned char *buf = usb_get_in_buffer(1);
             buf[0] = 0x0;
             buf[1] = 0x0;
-            if(button_is_pressed()) buf[2] = 0x4;
-            else buf[2] = 0;
-            buf[3] = 0x0;
+            /*if(button_is_pressed()) buf[2] = 0x4;
+            else*/ buf[2] = 0;
+            if(k_data.type_buffer_count > 0 || k_data.type_pressed) {
+                if(k_data.type_pressed) buf[3] = 0x0, k_data.type_pressed = 0;
+                else {
+                    buf[3] = keyboard_convert_ascii(
+                        k_data.type_buffer[k_data.type_buffer_start]);
+                    k_data.type_buffer_count --;
+                    k_data.type_buffer_start ++;
+                    k_data.type_buffer_start %= 64;
+                    k_data.type_pressed = 1;
+                }
+            }
+            else buf[3] = 0x0;
             buf[4] = 0x0;
             buf[5] = 0x0;
             buf[6] = 0x0;
@@ -45,6 +66,19 @@ bool keyboard_state_machine() {
         break;
     }
     return false;
+}
+
+void keyboard_type(char c) {
+    int index = (k_data.type_buffer_start + k_data.type_pressed) % 64;
+    k_data.type_buffer[index] = c;
+    k_data.type_buffer_count ++;
+}
+
+static uint8_t keyboard_convert_ascii(char c) {
+    if(c >= 'a' && c <= 'z') {
+        return c - 'a' + 4;
+    }
+    return 0;
 }
 
 /* Callbacks. These function names are set in usb_config.h. */

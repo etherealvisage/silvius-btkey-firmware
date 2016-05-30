@@ -1,6 +1,7 @@
 #include <stdint.h>
 
 #include "bluetooth.h"
+#include "keyboard.h"
 #include "p32mx250f128b.h"
 
 typedef enum bluetooth_state {
@@ -8,7 +9,8 @@ typedef enum bluetooth_state {
     BT_LISTEN_STATE,
     BT_READ_STATE,
     BT_PRESS_STATE,
-    BT_RELEASE_STATE
+    BT_RELEASE_STATE,
+    BT_TYPE_STATE
 } bluetooth_state;
 
 struct {
@@ -19,8 +21,6 @@ struct {
 
 bool bluetooth_state_machine() {
     static bluetooth_state STATE = BT_INIT_STATE;
-
-    return false;
 
     bool idle = false;
 
@@ -33,7 +33,7 @@ bool bluetooth_state_machine() {
         RPB15R = 0b0001; // RPB15 to U1TX
         // Initialize U1
         // Set baud rate to 9600 baud
-        U1BRG = 152;
+        U1BRG = 77;
         // Enable U1
         U1MODEbits.ON = 1;
         // Use simplex mode (two-wire)
@@ -55,7 +55,7 @@ bool bluetooth_state_machine() {
         }
 
         /* grab the command */
-        uint8_t cmd = U1RXR;
+        uint8_t cmd = U1RXREG;
 
         if(cmd == 'p') {
             STATE = BT_READ_STATE;
@@ -69,8 +69,27 @@ bool bluetooth_state_machine() {
             bt_data.buffer_length = 4;
             bt_data.next_state = BT_RELEASE_STATE;
         }
+        else if(cmd == 't') {
+            STATE = BT_TYPE_STATE;
+        }
         else {
             STATE = BT_LISTEN_STATE;
+        }
+
+        break;
+    }
+    case BT_READ_STATE: {
+        // nothing to do if there's no data waiting
+        if(U1STAbits.URXDA == 0) {
+            break;
+        }
+
+        uint8_t value = U1RXREG;
+        bt_data.buffer[bt_data.buffer_offset] = value;
+        bt_data.buffer_offset ++;
+
+        if(bt_data.buffer_length == bt_data.buffer_offset) {
+            STATE = bt_data.next_state;
         }
 
         break;
@@ -83,6 +102,25 @@ bool bluetooth_state_machine() {
     case BT_RELEASE_STATE: {
         /* TODO: handle keypress event */
         STATE = BT_LISTEN_STATE;
+        break;
+    }
+    case BT_TYPE_STATE: {
+        // nothing to do if there's no data waiting
+        if(U1STAbits.URXDA == 0) {
+            break;
+        }
+
+        uint8_t value = U1RXREG;
+
+        // terminate on space
+        if(value == ' ') {
+            STATE = BT_LISTEN_STATE;
+            break;
+        }
+        else {
+            keyboard_type(value);
+        }
+
         break;
     }
     default:

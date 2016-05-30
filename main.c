@@ -10,9 +10,9 @@
 typedef bool (*state_machine_ptr)();
 
 const state_machine_ptr state_machines[] = {
-    //bluetooth_state_machine,
+    bluetooth_state_machine,
     keyboard_state_machine,
-    button_state_machine,
+    //button_state_machine,
 };
 
 void setup_sysclk() {
@@ -68,8 +68,8 @@ void entry() {
         U2RXR = 0b0000; // RPA1 to U2RX
         RPB0R = 0b0010; // RPB0 to U2TX
         // Initialize U1
-        // Set baud rate to 19200 baud
-        U1BRG = 38;
+        // Set baud rate to 9600 baud
+        U1BRG = 77;
         // Enable U1
         U1MODEbits.ON = 1;
         // Use simplex mode (two-wire)
