@@ -1,4 +1,5 @@
 #include "keyboard.h"
+#include "button.h"
 
 #include "usb/include/usb.h"
 #include "usb/include/usb_hid.h"
@@ -10,8 +11,6 @@ typedef enum keyboard_state {
 } keyboard_state;
 
 struct {
-    int count;
-    int pressed;
 } k_data;
 
 bool keyboard_state_machine() {
@@ -19,38 +18,31 @@ bool keyboard_state_machine() {
     switch(STATE) {
     case K_INIT_STATE: {
         usb_init();
-        k_data.count = 0;
-        k_data.pressed = 0;
         STATE = K_WAIT_STATE;
         break;
     }
     case K_WAIT_STATE: {
-        if(k_data.count <= 0) {
-            if(usb_is_configured() &&
-                !usb_in_endpoint_halted(1) &&
-                !usb_in_endpoint_busy(1)) {
+        if(usb_is_configured() &&
+            !usb_in_endpoint_halted(1) &&
+            !usb_in_endpoint_busy(1)) {
 
-                unsigned char *buf = usb_get_in_buffer(1);
-                buf[0] = 0x0;
-                buf[1] = 0x0;
-                if(k_data.pressed) 
-                    buf[2] = 0x0;
-                else
-                    buf[2] = 0x4;
-                k_data.pressed = !k_data.pressed;
-                buf[3] = 0x0;
-                buf[4] = 0x0;
-                buf[5] = 0x0;
-                buf[6] = 0x0;
-                buf[7] = 0x0;
-                usb_send_in_buffer(1, 8);
-            }
-            k_data.count = 100000;
+            unsigned char *buf = usb_get_in_buffer(1);
+            buf[0] = 0x0;
+            buf[1] = 0x0;
+            if(button_is_pressed()) buf[2] = 0x4;
+            else buf[2] = 0;
+            buf[3] = 0x0;
+            buf[4] = 0x0;
+            buf[5] = 0x0;
+            buf[6] = 0x0;
+            buf[7] = 0x0;
+            usb_send_in_buffer(1, 8);
         }
-        k_data.count --;
         usb_service();
         break;
     }
+    default:
+        break;
     }
     return false;
 }

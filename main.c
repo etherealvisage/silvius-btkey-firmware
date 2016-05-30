@@ -5,12 +5,14 @@
 
 #include "bluetooth.h"
 #include "keyboard.h"
+#include "button.h"
 
 typedef bool (*state_machine_ptr)();
 
 const state_machine_ptr state_machines[] = {
-    bluetooth_state_machine,
+    //bluetooth_state_machine,
     keyboard_state_machine,
+    button_state_machine,
 };
 
 void setup_sysclk() {
@@ -53,6 +55,7 @@ void entry() {
     setup_sysclk();
     LATASET = 1;
 
+    #if 0
     // U1 setup
     {
         // mark pins as digital
@@ -75,6 +78,7 @@ void entry() {
         U1STAbits.UTXEN = 1;
         U1STAbits.URXEN = 1;
     }
+    #endif
 
     // U2 setup
     {
@@ -85,7 +89,7 @@ void entry() {
         TRISASET = (1<<1);
         // mark U2TX (RB0) as output
         TRISBCLR = (1<<0);
-        // set up PPS for U1
+        // set up PPS for U2
         U2RXR = 0b0000;
         RPB0R = 0b0010;
         // Initialize U2
@@ -100,7 +104,7 @@ void entry() {
     }
 
     // Let any listeners know we've finished initializing
-    U1TXREG = '~';
+    //U1TXREG = '~';
     U2TXREG = '~';
     
     LATACLR = 1;
@@ -118,7 +122,7 @@ void entry() {
             /* TODO: enter power-saving mode here */
         }
         if(j <= 0) {
-            LATAINV = 1;
+            //LATAINV = 1;
             j = 100000;
         }
         j --;

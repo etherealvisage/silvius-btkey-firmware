@@ -6,7 +6,7 @@ OBJCOPY:="${PREFIX}objcopy"
 
 CFLAGS := -D__PIC32MX__ -Os -msoft-float -EL -march=m4k -nostdlib -I. -Iusb/include
 
-MAIN_OBJECTS := main.o bluetooth.o keyboard.o util.o
+MAIN_OBJECTS := main.o bluetooth.o keyboard.o util.o led.o button.o
 USB_OBJECTS := usb_descriptors.o usb/src/usb.o usb/src/usb_cdc.o usb/src/usb_hid.o
 
 firmware.bin: firmware.srec
