@@ -11,13 +11,15 @@ typedef enum keyboard_state {
 } keyboard_state;
 
 struct {
-    char type_buffer[64];
+    uint8_t type_buffer[64];
     int type_buffer_start;
     int type_buffer_count;
     int type_pressed;
+    int cooldown_since_last;
 } k_data;
 
-static uint8_t keyboard_convert_ascii(char c);
+static void keyboard_convert_ascii(uint8_t *mod, uint8_t *value, uint8_t *skey,
+    uint8_t c);
 
 bool keyboard_state_machine() {
     static keyboard_state STATE = K_INIT_STATE;
@@ -29,22 +31,27 @@ bool keyboard_state_machine() {
         k_data.type_buffer_start = 0;
         k_data.type_buffer_count = 0;
         k_data.type_pressed = 0;
+        k_data.cooldown_since_last = 0;
         break;
     }
     case K_WAIT_STATE: {
+        if(k_data.cooldown_since_last > 0) {
+            k_data.cooldown_since_last --;
+            break;
+        }
+        k_data.cooldown_since_last = 1000;
         if(usb_is_configured() &&
             !usb_in_endpoint_halted(1) &&
             !usb_in_endpoint_busy(1)) {
 
             unsigned char *buf = usb_get_in_buffer(1);
-            buf[0] = 0x0;
-            buf[1] = 0x0;
-            /*if(button_is_pressed()) buf[2] = 0x4;
-            else*/ buf[2] = 0;
+            buf[0] = 0;
+            buf[1] = 0;
+            buf[2] = 0;
             if(k_data.type_buffer_count > 0 || k_data.type_pressed) {
                 if(k_data.type_pressed) buf[3] = 0x0, k_data.type_pressed = 0;
                 else {
-                    buf[3] = keyboard_convert_ascii(
+                    keyboard_convert_ascii(buf + 0, buf + 3, buf + 4,
                         k_data.type_buffer[k_data.type_buffer_start]);
                     k_data.type_buffer_count --;
                     k_data.type_buffer_start ++;
@@ -69,16 +76,60 @@ bool keyboard_state_machine() {
 }
 
 void keyboard_type(char c) {
-    int index = (k_data.type_buffer_start + k_data.type_pressed) % 64;
+    int index = (k_data.type_buffer_start + k_data.type_buffer_count) % 64;
     k_data.type_buffer[index] = c;
     k_data.type_buffer_count ++;
 }
 
-static uint8_t keyboard_convert_ascii(char c) {
+static const uint8_t ascii_to_usb[256][3] = {
+    {0,0,0},
+#include "ascii_to_usb.h"
+};
+
+static void keyboard_convert_ascii(uint8_t *mod, uint8_t *key, uint8_t *skey,
+    uint8_t c) {
+
+    *mod = ascii_to_usb[c][0];
+    *key = ascii_to_usb[c][1];
+    *skey = ascii_to_usb[c][2];
+
+#if 0
+    // Letters
     if(c >= 'a' && c <= 'z') {
-        return c - 'a' + 4;
+        *key = (c - 'a' + 4);
     }
-    return 0;
+    else if(c >= 'A' && c <= 'Z') {
+        *mod |= 2; // left shift key
+        *skey = 225;
+        *key = (c - 'A' + 4);
+    }
+    // Numbers
+    else if(c == '0') {
+        *key = 39;
+    }
+    else if(c >= '1' && c <= '9') {
+        *key = (c - '1' + 30);
+    }
+    // Whitespaces
+    else if(c == ' ') {
+        *key = 44;
+    }
+    else if(c == '\t') {
+        *key = 43;
+    }
+    else if(c == '\r') {
+        *key = 40;
+    }
+    else if(c == '\b') {
+        *key = 42;
+    }
+    else if(c == '\x7f') {
+        *key = 76;
+    }
+    else {
+        *key = 0;
+    }
+#endif
 }
 
 /* Callbacks. These function names are set in usb_config.h. */

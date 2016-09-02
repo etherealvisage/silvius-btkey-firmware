@@ -112,8 +112,8 @@ bool bluetooth_state_machine() {
 
         uint8_t value = U1RXREG;
 
-        // terminate on space
-        if(value == ' ') {
+        // terminate on tilde
+        if(value == '~') {
             STATE = BT_LISTEN_STATE;
             break;
         }

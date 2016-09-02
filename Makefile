@@ -6,7 +6,7 @@ OBJCOPY:="${PREFIX}objcopy"
 
 CFLAGS := -D__PIC32MX__ -Os -msoft-float -EL -march=m4k -nostdlib -I. -Iusb/include
 
-MAIN_OBJECTS := main.o bluetooth.o keyboard.o util.o led.o button.o
+MAIN_OBJECTS := main.o bluetooth.o keyboard.o util.o button.o
 USB_OBJECTS := usb_descriptors.o usb/src/usb.o usb/src/usb_cdc.o usb/src/usb_hid.o
 
 firmware.bin: firmware.srec
@@ -29,7 +29,7 @@ init.o: init.s
 
 .PHONY: clean
 clean:
-	rm -f firmware.srec firmware.elf init.o main.o p32mx250f128b.o ${USB_OBJECTS}
+	rm -f firmware.bin firmware.srec firmware.elf init.o p32mx250f128b.o ${USB_OBJECTS} ${MAIN_OBJECTS}
 
 .PHONY: upload
 upload: firmware.bin
